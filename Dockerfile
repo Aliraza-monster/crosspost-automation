@@ -2,9 +2,10 @@ FROM node:20-bookworm-slim
 
 WORKDIR /app
 
-# yt-dlp workflows need python3 and ffmpeg in runtime.
+# yt-dlp workflows need python3 + ffmpeg, and latest yt-dlp binary.
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends python3 ffmpeg ca-certificates \
+  && apt-get install -y --no-install-recommends python3 python3-pip ffmpeg ca-certificates \
+  && python3 -m pip install --no-cache-dir --upgrade yt-dlp \
   && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json ./

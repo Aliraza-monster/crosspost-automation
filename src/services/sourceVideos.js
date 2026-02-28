@@ -1,7 +1,27 @@
 ﻿const fs = require('fs');
 const path = require('path');
-const youtubedl = require('youtube-dl-exec');
+const youtubedlModule = require('youtube-dl-exec');
 const env = require('../config/env');
+
+const youtubedl =
+  typeof youtubedlModule.create === 'function' && fs.existsSync(env.ytdlpBinary)
+    ? youtubedlModule.create(env.ytdlpBinary)
+    : youtubedlModule;
+
+function withDownloaderDefaults(options = {}) {
+  const merged = {
+    noWarnings: true,
+    quiet: true,
+    noCheckCertificates: true,
+    ...options,
+  };
+
+  if (env.instagramCookiesPath && fs.existsSync(env.instagramCookiesPath)) {
+    merged.cookies = env.instagramCookiesPath;
+  }
+
+  return merged;
+}
 
 function toIsoDate(entry) {
   if (entry.timestamp) {
@@ -31,15 +51,29 @@ function normalizeEntry(entry, fallbackIndex) {
 }
 
 async function listSourceVideos(sourceUrl) {
-  const rawMetadata = await youtubedl(sourceUrl, {
-    dumpSingleJson: true,
-    skipDownload: true,
-    noWarnings: true,
-    quiet: true,
-    flatPlaylist: false,
-    ignoreErrors: true,
-    noCheckCertificates: true,
-  });
+  let rawMetadata;
+  try {
+    rawMetadata = await youtubedl(
+      sourceUrl,
+      withDownloaderDefaults({
+        dumpSingleJson: true,
+        skipDownload: true,
+        flatPlaylist: false,
+        ignoreErrors: true,
+      }),
+    );
+  } catch (error) {
+    const message = error.message || 'Source extractor failed.';
+    const isInstagram = /instagram/i.test(sourceUrl);
+    const extractFailure = /Unable to extract data/i.test(message);
+    if (isInstagram && extractFailure) {
+      throw new Error(
+        `${message}. Set INSTAGRAM_COOKIES_PATH with exported Instagram cookies and retry.`,
+      );
+    }
+
+    throw error;
+  }
 
   let metadata = rawMetadata;
   if (typeof rawMetadata === 'string') {
@@ -88,15 +122,15 @@ async function downloadVideo(url, fileBaseName) {
   const safeBase = safeFileBase(fileBaseName);
   const template = path.join(env.tempDir, `${safeBase}.%(ext)s`);
 
-  await youtubedl(url, {
-    noWarnings: true,
-    quiet: true,
-    noCheckCertificates: true,
-    noPlaylist: true,
-    format: 'bv*+ba/b',
-    mergeOutputFormat: 'mp4',
-    output: template,
-  });
+  await youtubedl(
+    url,
+    withDownloaderDefaults({
+      noPlaylist: true,
+      format: 'bv*+ba/b',
+      mergeOutputFormat: 'mp4',
+      output: template,
+    }),
+  );
 
   const files = fs.readdirSync(env.tempDir);
   const downloaded = files

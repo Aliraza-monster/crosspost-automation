@@ -85,4 +85,5 @@ If no new videos are found, job remains active and checks again later.
 
 - Store tokens securely for production. This sample stores them in SQLite for functionality.
 - For production, add encryption-at-rest and CSRF protection.
-- If downloader fails, install latest `yt-dlp` binary and ensure it is available in PATH.
+- If Instagram profile extraction fails, provide exported cookies using `INSTAGRAM_COOKIES_PATH`.
+- `YTDLP_BINARY` can point to a custom `yt-dlp` binary path.

@@ -9,6 +9,8 @@ const env = {
   sessionSecret: process.env.SESSION_SECRET || 'change-me-in-production',
   databasePath: process.env.DATABASE_PATH || path.join(__dirname, '../../storage/app.db'),
   tempDir: process.env.TEMP_DIR || path.join(__dirname, '../../storage/tmp'),
+  ytdlpBinary: process.env.YTDLP_BINARY || '/usr/local/bin/yt-dlp',
+  instagramCookiesPath: process.env.INSTAGRAM_COOKIES_PATH || '',
   facebookGraphVersion: process.env.FACEBOOK_GRAPH_VERSION || 'v23.0',
   schedulerCron: process.env.SCHEDULER_CRON || '* * * * *',
   timezone: process.env.TIMEZONE || 'America/Los_Angeles',
