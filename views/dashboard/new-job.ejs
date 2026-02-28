@@ -1,0 +1,125 @@
+﻿<%- include('../partials/header') %>
+
+<section>
+  <h1>Create Automation Job</h1>
+  <p>
+    Add Facebook token, fetch your pages, choose one page, and set source profile URL.
+    The first post starts from the oldest source video.
+  </p>
+</section>
+
+<% if (!subscription) { %>
+  <div class="alert alert-error">
+    No active subscription found. Ask admin to assign one before creating a job.
+  </div>
+<% } %>
+
+<section class="card form-card wide">
+  <form method="post" action="/dashboard/jobs">
+    <label>Job Name</label>
+    <input type="text" name="name" placeholder="Example: IG to Main FB Page" required />
+
+    <label>Source Platform</label>
+    <select name="sourcePlatform" required>
+      <option value="instagram">Instagram</option>
+      <option value="tiktok">TikTok</option>
+    </select>
+
+    <label>Source Public Profile URL</label>
+    <input type="url" name="sourceUrl" placeholder="https://www.instagram.com/username/" required />
+
+    <label>Facebook User Access Token (with page permissions)</label>
+    <textarea name="facebookUserToken" id="facebookUserToken" rows="4" required></textarea>
+
+    <button class="btn btn-secondary" type="button" id="fetchPagesBtn">Fetch My Pages</button>
+    <p id="pageFetchMessage" class="inline-note"></p>
+
+    <label>Select Facebook Page</label>
+    <select id="pageSelect" required>
+      <option value="">Fetch pages first</option>
+    </select>
+
+    <input type="hidden" name="facebookPageId" id="facebookPageId" />
+    <input type="hidden" name="facebookPageName" id="facebookPageName" />
+    <input type="hidden" name="facebookPageToken" id="facebookPageToken" />
+
+    <button class="btn btn-primary" type="submit" <%= subscription ? '' : 'disabled' %>>Save Job</button>
+  </form>
+</section>
+
+<script>
+  const fetchBtn = document.getElementById('fetchPagesBtn');
+  const tokenInput = document.getElementById('facebookUserToken');
+  const pageSelect = document.getElementById('pageSelect');
+  const msg = document.getElementById('pageFetchMessage');
+  const pageIdInput = document.getElementById('facebookPageId');
+  const pageNameInput = document.getElementById('facebookPageName');
+  const pageTokenInput = document.getElementById('facebookPageToken');
+
+  function applySelectedPage() {
+    const selected = pageSelect.options[pageSelect.selectedIndex];
+    if (!selected || !selected.value) {
+      pageIdInput.value = '';
+      pageNameInput.value = '';
+      pageTokenInput.value = '';
+      return;
+    }
+
+    pageIdInput.value = selected.value;
+    pageNameInput.value = selected.dataset.name || '';
+    pageTokenInput.value = selected.dataset.token || '';
+  }
+
+  pageSelect.addEventListener('change', applySelectedPage);
+
+  fetchBtn.addEventListener('click', async () => {
+    const token = tokenInput.value.trim();
+    if (!token) {
+      msg.textContent = 'Enter a Facebook user token first.';
+      return;
+    }
+
+    msg.textContent = 'Fetching pages...';
+    pageSelect.innerHTML = '<option value="">Loading...</option>';
+
+    try {
+      const response = await fetch('/dashboard/facebook-pages/fetch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userToken: token }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Unable to fetch pages.');
+      }
+
+      const pages = data.pages || [];
+      if (!pages.length) {
+        pageSelect.innerHTML = '<option value="">No pages found for this token</option>';
+        msg.textContent = 'Token is valid but no manageable pages were returned.';
+        applySelectedPage();
+        return;
+      }
+
+      pageSelect.innerHTML = '<option value="">Select a page</option>';
+      pages.forEach((page) => {
+        const option = document.createElement('option');
+        option.value = page.id;
+        option.textContent = `${page.name} (${page.id})`;
+        option.dataset.name = page.name;
+        option.dataset.token = page.accessToken;
+        pageSelect.appendChild(option);
+      });
+
+      msg.textContent = `Loaded ${pages.length} page(s).`;
+      applySelectedPage();
+    } catch (error) {
+      msg.textContent = error.message;
+      pageSelect.innerHTML = '<option value="">Fetch failed</option>';
+      applySelectedPage();
+    }
+  });
+</script>
+
+<%- include('../partials/footer') %>

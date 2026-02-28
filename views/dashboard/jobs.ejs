@@ -1,0 +1,59 @@
+﻿<%- include('../partials/header') %>
+
+<section class="section-head">
+  <div>
+    <h1>Automation Jobs</h1>
+    <p>Each job posts oldest-to-newest every 24 hours.</p>
+  </div>
+  <a href="/dashboard/jobs/new" class="btn btn-primary">New Job</a>
+</section>
+
+<% if (!subscription) { %>
+  <div class="alert alert-error">No active subscription. Ask admin to assign one before creating jobs.</div>
+<% } %>
+
+<section class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Source</th>
+        <th>Page</th>
+        <th>Next Index</th>
+        <th>Next Run</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (!jobs.length) { %>
+        <tr><td colspan="7">No jobs created yet.</td></tr>
+      <% } %>
+      <% jobs.forEach((job) => { %>
+        <tr>
+          <td><%= job.name %></td>
+          <td><%= job.source_platform %><br /><small><%= job.source_url %></small></td>
+          <td><%= job.facebook_page_name %></td>
+          <td><%= job.next_media_index %></td>
+          <td><%= job.next_run_at || '-' %></td>
+          <td><span class="pill"><%= job.status %></span></td>
+          <td>
+            <div class="actions">
+              <form method="post" action="/dashboard/jobs/<%= job.id %>/run-now">
+                <button class="btn btn-secondary" type="submit">Run Now</button>
+              </form>
+              <form method="post" action="/dashboard/jobs/<%= job.id %>/toggle">
+                <button class="btn btn-ghost" type="submit"><%= job.status === 'active' ? 'Pause' : 'Resume' %></button>
+              </form>
+              <form method="post" action="/dashboard/jobs/<%= job.id %>/delete" onsubmit="return confirm('Archive this job?');">
+                <button class="btn btn-danger" type="submit">Archive</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</section>
+
+<%- include('../partials/footer') %>

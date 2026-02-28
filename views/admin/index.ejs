@@ -1,0 +1,56 @@
+﻿<%- include('../partials/header') %>
+
+<section>
+  <h1>Admin Dashboard</h1>
+  <p>Control plans, subscriptions, and customer automation jobs.</p>
+</section>
+
+<section class="grid stats-grid">
+  <article class="card stat-card"><h3>Customers</h3><p><%= stats.users %></p></article>
+  <article class="card stat-card"><h3>Plans</h3><p><%= stats.plans %></p></article>
+  <article class="card stat-card"><h3>Active Subs</h3><p><%= stats.activeSubscriptions %></p></article>
+  <article class="card stat-card"><h3>Active Jobs</h3><p><%= stats.activeJobs %></p></article>
+</section>
+
+<section class="grid two-col">
+  <article class="card">
+    <h2>Recent Customers</h2>
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Email</th><th>Created</th></tr>
+      </thead>
+      <tbody>
+        <% if (!recentUsers.length) { %>
+          <tr><td colspan="3">No customers yet.</td></tr>
+        <% } %>
+        <% recentUsers.forEach((u) => { %>
+          <tr><td><%= u.name %></td><td><%= u.email %></td><td><%= u.created_at %></td></tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </article>
+
+  <article class="card">
+    <h2>Recent Jobs</h2>
+    <table>
+      <thead>
+        <tr><th>Job</th><th>Owner</th><th>Page</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <% if (!recentJobs.length) { %>
+          <tr><td colspan="4">No jobs yet.</td></tr>
+        <% } %>
+        <% recentJobs.forEach((job) => { %>
+          <tr>
+            <td><%= job.name %><br /><small><%= job.source_platform %></small></td>
+            <td><%= job.owner_name %></td>
+            <td><%= job.facebook_page_name %></td>
+            <td><span class="pill"><%= job.status %></span></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </article>
+</section>
+
+<%- include('../partials/footer') %>

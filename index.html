@@ -1,0 +1,135 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CrossPost Pro Netlify Gateway</title>
+    <style>
+      :root {
+        --bg: #0b1320;
+        --card: #111a2b;
+        --ink: #e9f0fa;
+        --muted: #a6b3c8;
+        --line: #21314d;
+        --accent: #12b886;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 20% 10%, #173255 0%, transparent 30%),
+          radial-gradient(circle at 85% 90%, #0f5d52 0%, transparent 30%),
+          var(--bg);
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 20px;
+      }
+
+      .card {
+        width: min(760px, 100%);
+        background: linear-gradient(160deg, rgba(17, 26, 43, 0.95), rgba(13, 21, 34, 0.95));
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: 0 22px 48px rgba(0, 0, 0, 0.35);
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(1.7rem, 3.5vw, 2.6rem);
+      }
+
+      p {
+        margin: 8px 0;
+        color: var(--muted);
+      }
+
+      .note {
+        margin-top: 14px;
+        padding: 12px;
+        border-radius: 10px;
+        background: #0d1a2e;
+        border: 1px solid #1c2d49;
+        font-size: 0.95rem;
+      }
+
+      .actions {
+        margin-top: 20px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+      }
+
+      a.btn {
+        text-decoration: none;
+        color: #07121f;
+        background: var(--accent);
+        border: 1px solid #25d8a2;
+        border-radius: 11px;
+        padding: 12px;
+        font-weight: 700;
+        text-align: center;
+      }
+
+      a.btn.secondary {
+        background: #dfe9f7;
+        border-color: #f1f6ff;
+      }
+
+      .footer {
+        margin-top: 16px;
+        font-size: 0.85rem;
+      }
+
+      code {
+        background: #091121;
+        border: 1px solid #1c2d49;
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h1>CrossPost Pro</h1>
+      <p>Netlify gateway for your cross-posting automation service.</p>
+      <p>Set your backend URL once, then use the buttons below.</p>
+
+      <div class="note">
+        Edit this line in this file and replace with your backend URL:
+        <br />
+        <code>const BACKEND_URL = 'https://your-backend.example.com';</code>
+      </div>
+
+      <div class="actions" id="actions"></div>
+
+      <p class="footer">Deploy this file to Netlify as a static site.</p>
+    </main>
+
+    <script>
+      const BACKEND_URL = 'https://your-backend.example.com';
+      const routes = [
+        { label: 'Open Website', path: '/', cls: 'btn secondary' },
+        { label: 'Customer Login', path: '/login', cls: 'btn' },
+        { label: 'Admin Dashboard', path: '/admin', cls: 'btn' },
+        { label: 'Manage Plans', path: '/admin/plans', cls: 'btn secondary' },
+      ];
+
+      const wrap = document.getElementById('actions');
+      routes.forEach((item) => {
+        const a = document.createElement('a');
+        a.className = item.cls;
+        a.href = BACKEND_URL.replace(/\/$/, '') + item.path;
+        a.textContent = item.label;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        wrap.appendChild(a);
+      });
+    </script>
+  </body>
+</html>

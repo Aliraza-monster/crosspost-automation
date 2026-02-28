@@ -1,0 +1,77 @@
+﻿<%- include('../partials/header') %>
+
+<section>
+  <h1>Customer Dashboard</h1>
+  <p>Manage your cross-posting jobs and monitor automation logs.</p>
+</section>
+
+<section class="grid stats-grid">
+  <article class="card stat-card">
+    <h3>Total Jobs</h3>
+    <p><%= stats.total_jobs || 0 %></p>
+  </article>
+  <article class="card stat-card">
+    <h3>Active Jobs</h3>
+    <p><%= stats.active_jobs || 0 %></p>
+  </article>
+  <article class="card stat-card">
+    <h3>Paused Jobs</h3>
+    <p><%= stats.paused_jobs || 0 %></p>
+  </article>
+  <article class="card stat-card">
+    <h3>Current Plan</h3>
+    <p><%= subscription ? subscription.plan_name : 'No Active Plan' %></p>
+  </article>
+</section>
+
+<section class="grid two-col">
+  <article class="card">
+    <div class="section-head">
+      <h2>Upcoming Runs</h2>
+      <a href="/dashboard/jobs" class="btn btn-ghost">Manage Jobs</a>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Job</th>
+          <th>Page</th>
+          <th>Next Index</th>
+          <th>Next Run</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!upcomingJobs.length) { %>
+          <tr><td colspan="5">No jobs yet.</td></tr>
+        <% } %>
+        <% upcomingJobs.forEach((job) => { %>
+          <tr>
+            <td><%= job.name %></td>
+            <td><%= job.facebook_page_name %></td>
+            <td><%= job.next_media_index %></td>
+            <td><%= job.next_run_at || 'Pending' %></td>
+            <td><span class="pill"><%= job.status %></span></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </article>
+
+  <article class="card">
+    <h2>Recent Logs</h2>
+    <ul class="log-list">
+      <% if (!recentLogs.length) { %>
+        <li>No logs yet.</li>
+      <% } %>
+      <% recentLogs.forEach((log) => { %>
+        <li>
+          <strong>[<%= log.level.toUpperCase() %>]</strong>
+          <span><%= log.job_name %> - <%= log.message %></span>
+          <small><%= log.created_at %></small>
+        </li>
+      <% }) %>
+    </ul>
+  </article>
+</section>
+
+<%- include('../partials/footer') %>

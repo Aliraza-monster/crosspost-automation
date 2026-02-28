@@ -1,0 +1,6 @@
+﻿node_modules/
+.env
+storage/*.db
+storage/*.db-*
+storage/tmp/*
+npm-debug.log*

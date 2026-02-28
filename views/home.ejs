@@ -1,0 +1,45 @@
+﻿<%- include('partials/header') %>
+
+<section class="hero">
+  <div>
+    <p class="badge">Facebook Automation Service</p>
+    <h1>Cross-post from Instagram or TikTok to your Facebook Pages automatically.</h1>
+    <p>
+      Start from the oldest video, publish one video every 24 hours, keep title/description,
+      and clean temporary files after each upload.
+    </p>
+    <div class="hero-actions">
+      <a href="/register" class="btn btn-primary">Create Customer Account</a>
+      <a href="/login" class="btn btn-secondary">Login</a>
+    </div>
+  </div>
+  <div class="hero-card">
+    <h3>How it works</h3>
+    <ol>
+      <li>Connect Facebook token and choose target page.</li>
+      <li>Add public Instagram/TikTok source URL.</li>
+      <li>System posts oldest video first, then next oldest every day.</li>
+      <li>Downloaded file is removed right after upload.</li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <h2>Pricing Plans</h2>
+  <div class="grid plans-grid">
+    <% if (!plans || plans.length === 0) { %>
+      <p>No active plans yet. Admin can create plans in dashboard.</p>
+    <% } %>
+
+    <% (plans || []).forEach((plan) => { %>
+      <article class="card plan-card">
+        <h3><%= plan.name %></h3>
+        <p class="price">$<%= Number(plan.price_usd).toFixed(0) %>/<%= plan.billing_cycle %></p>
+        <p><%= plan.description || 'Custom automation package.' %></p>
+        <p><strong><%= plan.max_jobs %></strong> active automation jobs</p>
+      </article>
+    <% }) %>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

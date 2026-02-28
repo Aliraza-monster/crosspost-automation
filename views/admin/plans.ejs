@@ -1,0 +1,58 @@
+﻿<%- include('../partials/header') %>
+
+<section>
+  <h1>Plan Management</h1>
+</section>
+
+<section class="grid two-col">
+  <article class="card">
+    <h2>Create Plan</h2>
+    <form method="post" action="/admin/plans" class="form-card">
+      <label>Plan Name</label>
+      <input type="text" name="name" required />
+
+      <label>Price (USD)</label>
+      <input type="number" name="priceUsd" step="0.01" min="0" required />
+
+      <label>Billing Cycle</label>
+      <input type="text" name="billingCycle" value="monthly" required />
+
+      <label>Description</label>
+      <textarea name="description" rows="3"></textarea>
+
+      <label>Max Jobs</label>
+      <input type="number" name="maxJobs" min="1" value="1" required />
+
+      <label class="checkbox">
+        <input type="checkbox" name="active" checked />
+        Active
+      </label>
+
+      <button type="submit" class="btn btn-primary">Create Plan</button>
+    </form>
+  </article>
+
+  <article class="card">
+    <h2>Existing Plans</h2>
+    <div class="stack">
+      <% plans.forEach((plan) => { %>
+        <form method="post" action="/admin/plans/<%= plan.id %>" class="plan-edit">
+          <div class="grid plan-grid">
+            <input type="text" name="name" value="<%= plan.name %>" required />
+            <input type="number" step="0.01" min="0" name="priceUsd" value="<%= plan.price_usd %>" required />
+            <input type="text" name="billingCycle" value="<%= plan.billing_cycle %>" required />
+            <input type="number" min="1" name="maxJobs" value="<%= plan.max_jobs %>" required />
+            <label class="checkbox inline">
+              <input type="checkbox" name="active" <%= plan.active ? 'checked' : '' %> />
+              Active
+            </label>
+            <button type="submit" class="btn btn-secondary">Update</button>
+          </div>
+          <textarea name="description" rows="2"><%= plan.description || '' %></textarea>
+        </form>
+      <% }) %>
+    </div>
+  </article>
+</section>
+
+<%- include('../partials/footer') %>

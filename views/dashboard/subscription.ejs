@@ -1,0 +1,38 @@
+﻿<%- include('../partials/header') %>
+
+<section>
+  <h1>Subscription</h1>
+  <p>Your active package controls how many automation jobs you can run.</p>
+</section>
+
+<section class="grid two-col">
+  <article class="card">
+    <h2>Current Plan</h2>
+    <% if (!subscription) { %>
+      <p>No active subscription. Ask admin to assign a plan from admin panel.</p>
+    <% } else { %>
+      <p><strong><%= subscription.plan_name %></strong></p>
+      <p>$<%= Number(subscription.price_usd).toFixed(0) %> / <%= subscription.billing_cycle %></p>
+      <p>Max jobs: <%= subscription.max_jobs %></p>
+      <p>Status: <%= subscription.status %></p>
+      <p>Start: <%= subscription.starts_at %></p>
+      <p>End: <%= subscription.ends_at || 'No end date' %></p>
+    <% } %>
+  </article>
+
+  <article class="card">
+    <h2>Available Packages</h2>
+    <ul class="plan-list">
+      <% plans.forEach((plan) => { %>
+        <li>
+          <strong><%= plan.name %></strong>
+          <span>$<%= Number(plan.price_usd).toFixed(0) %>/<%= plan.billing_cycle %></span>
+          <small><%= plan.description || '' %></small>
+          <small><%= plan.max_jobs %> active jobs</small>
+        </li>
+      <% }) %>
+    </ul>
+  </article>
+</section>
+
+<%- include('../partials/footer') %>

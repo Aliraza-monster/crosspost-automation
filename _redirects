@@ -1,0 +1,8 @@
+﻿/login https://your-backend.example.com/login 302
+/register https://your-backend.example.com/register 302
+/admin https://your-backend.example.com/admin 302
+/admin/* https://your-backend.example.com/admin/:splat 302
+/dashboard https://your-backend.example.com/dashboard 302
+/dashboard/* https://your-backend.example.com/dashboard/:splat 302
+/health https://your-backend.example.com/health 302
+/* /index.html 200
