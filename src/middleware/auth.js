@@ -10,7 +10,7 @@ function attachCurrentUser(req, res, next) {
   }
 
   const user = db
-    .prepare('SELECT id, name, email, is_admin FROM users WHERE id = ?')
+    .prepare('SELECT id, name, email, token_balance, is_admin FROM users WHERE id = ?')
     .get(req.session.userId);
 
   if (!user) {

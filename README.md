@@ -1,32 +1,37 @@
-﻿# CrossPost Pro (Instagram/TikTok -> Facebook Page Automation)
+﻿# SMM Cross Automation
 
-Node.js web app for selling a cross-posting automation service.
+Node.js platform for running Instagram/TikTok/YouTube -> Facebook page automation with token-based billing.
 
-## What this app includes
+## What is included
 
-- Public website with pricing cards
+- Public landing page with branding for **SMM Cross Automation**
 - Customer auth (register/login)
-- Customer dashboard
-- Automation job setup with:
-  - source platform (Instagram/TikTok)
-  - source profile URL
-  - Facebook user token input
-  - Facebook page selection (fetches all manageable pages from token)
-- Daily automation engine:
-  - starts from oldest source video
-  - uploads one video every 24 hours
-  - keeps source title/description
-  - deletes temporary downloaded file after upload
-- Admin dashboard
-- Admin plan creation/editing
-- Admin manual subscription assignment to customers
+- Customer dashboard with:
+  - token balance
+  - automation jobs
+  - logs
+  - payment request history
+- Token wallet workflow:
+  - user pays through Easypaisa
+  - user submits payment request with transaction reference
+  - admin approves/rejects
+  - approved requests credit user tokens
+  - every successful upload consumes 1 token
+- Admin dashboard with:
+  - pending payment approvals
+  - token credit/debit controls
+  - customer and job visibility
+- Automation engine:
+  - oldest-to-newest source posting
+  - scheduled checks via cron
+  - Facebook page video upload support
 
 ## Tech
 
 - Express + EJS
 - SQLite (`better-sqlite3`)
 - Scheduler: `node-cron`
-- Downloader: `youtube-dl-exec` (uses yt-dlp engine)
+- Source extraction/downloading: `youtube-dl-exec` / `yt-dlp`
 - Facebook Graph API upload via `axios`
 
 ## Setup
@@ -37,7 +42,7 @@ Node.js web app for selling a cross-posting automation service.
 npm install
 ```
 
-2. Copy env and edit:
+2. Copy env and edit values:
 
 ```bash
 copy .env.example .env
@@ -53,37 +58,31 @@ npm start
 
 `http://localhost:3000`
 
+## Required env values
+
+- `APP_NAME` (default: `SMM Cross Automation`)
+- `EASYPAISA_NUMBER` (default: `+923053120875`)
+- `ADMIN_EMAIL`
+- `ADMIN_PASSWORD`
+- `SESSION_SECRET`
+
 ## Default admin
 
-On first run, admin user is auto-created from env values:
+Admin user is auto-created from env:
 
 - `ADMIN_EMAIL`
 - `ADMIN_PASSWORD`
 
-Use these to login at `/login` and access `/admin`.
+## Payment flow
 
-## Required permissions for Facebook token
-
-User token must be generated for your app with page permissions needed for posting video to page.
-Typically includes page management/posting scopes according to your Graph API app configuration.
-
-## Workflow details
-
-When a customer creates a job:
-
-1. Source URL is scanned for videos.
-2. Videos are sorted oldest -> newest.
-3. Job posts video at `next_media_index`.
-4. After success, index increments by 1 and next run is set for +24h.
-5. Downloaded file is deleted immediately after upload.
-
-Scheduler checks due jobs every minute by default (`SCHEDULER_CRON` in `.env`).
-
-If no new videos are found, job remains active and checks again later.
+1. User sends Easypaisa payment to configured number.
+2. User submits amount + transaction reference from `/dashboard/payments`.
+3. Admin reviews from `/admin/payments`.
+4. On approval, tokens are credited and logged in `token_ledger`.
 
 ## Notes
 
-- Store tokens securely for production. This sample stores them in SQLite for functionality.
-- For production, add encryption-at-rest and CSRF protection.
-- If Instagram profile extraction fails, provide exported cookies using `INSTAGRAM_COOKIES_PATH`.
-- `YTDLP_BINARY` can point to a custom `yt-dlp` binary path.
+- This project stores tokens and access details in SQLite for MVP use.
+- For production, add encryption-at-rest, stricter audit logs, rate limits, and CSRF protection.
+- Ensure your Facebook app permissions are valid for page video publishing.
+- Ensure `yt-dlp` is installed and reachable by `YTDLP_BINARY` if auto-discovery fails.

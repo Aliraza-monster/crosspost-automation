@@ -1,0 +1,98 @@
+<%- include('../partials/header') %>
+
+<section>
+  <h1>Payments & Tokens</h1>
+  <p>Pay via Easypaisa, submit your transaction reference, then wait for admin approval.</p>
+</section>
+
+<section class="grid stats-grid">
+  <article class="card stat-card">
+    <h3>Current Tokens</h3>
+    <p><%= tokenBalance %></p>
+  </article>
+  <article class="card">
+    <h3>Easypaisa Receiver</h3>
+    <p class="copy-block"><strong><%= easypaisaNumber %></strong></p>
+    <p>Send payment to this number before submitting your request below.</p>
+  </article>
+</section>
+
+<section class="grid two-col">
+  <article class="card">
+    <h2>Submit Payment Request</h2>
+    <form method="post" action="/dashboard/payments" class="form-card">
+      <label>Amount (PKR)</label>
+      <input type="number" step="1" min="1" name="amountPkr" placeholder="1000" required />
+
+      <label>Easypaisa Transaction Reference</label>
+      <input type="text" name="transactionRef" placeholder="TRX12345678" required />
+
+      <label>Notes (optional)</label>
+      <textarea name="notes" rows="3" placeholder="Package, token request, or any details"></textarea>
+
+      <button type="submit" class="btn btn-primary">Submit for Approval</button>
+    </form>
+  </article>
+
+  <article class="card">
+    <h2>My Payment Requests</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Amount</th>
+          <th>Reference</th>
+          <th>Status</th>
+          <th>Tokens</th>
+          <th>Reviewed By</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!paymentRequests.length) { %>
+          <tr><td colspan="5">No payment requests yet.</td></tr>
+        <% } %>
+        <% paymentRequests.forEach((item) => { %>
+          <tr>
+            <td>PKR <%= Number(item.amount_pkr).toFixed(0) %></td>
+            <td><%= item.transaction_ref %></td>
+            <td><span class="pill"><%= item.status %></span></td>
+            <td><%= item.tokens_to_credit || '-' %></td>
+            <td><%= item.reviewer_name || '-' %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </article>
+</section>
+
+<section>
+  <article class="card">
+    <h2>Token Ledger</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Delta</th>
+          <th>Reason</th>
+          <th>Admin</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!tokenLedger.length) { %>
+          <tr><td colspan="4">No token activity yet.</td></tr>
+        <% } %>
+        <% tokenLedger.forEach((entry) => { %>
+          <tr>
+            <td><%= entry.created_at %></td>
+            <td class="<%= entry.delta_tokens > 0 ? 'positive' : 'negative' %>">
+              <%= entry.delta_tokens > 0 ? '+' : '' %><%= entry.delta_tokens %>
+            </td>
+            <td><%= entry.reason %></td>
+            <td><%= entry.admin_name || '-' %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </article>
+</section>
+
+<%- include('../partials/footer') %>

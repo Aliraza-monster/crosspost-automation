@@ -1,11 +1,15 @@
-﻿<%- include('../partials/header') %>
+<%- include('../partials/header') %>
 
 <section>
   <h1>Customer Dashboard</h1>
-  <p>Manage your cross-posting jobs and monitor automation logs.</p>
+  <p>Manage automation jobs, token balance, and payment approvals.</p>
 </section>
 
 <section class="grid stats-grid">
+  <article class="card stat-card">
+    <h3>Token Balance</h3>
+    <p><%= tokenBalance %></p>
+  </article>
   <article class="card stat-card">
     <h3>Total Jobs</h3>
     <p><%= stats.total_jobs || 0 %></p>
@@ -15,12 +19,8 @@
     <p><%= stats.active_jobs || 0 %></p>
   </article>
   <article class="card stat-card">
-    <h3>Paused Jobs</h3>
-    <p><%= stats.paused_jobs || 0 %></p>
-  </article>
-  <article class="card stat-card">
-    <h3>Current Plan</h3>
-    <p><%= subscription ? subscription.plan_name : 'No Active Plan' %></p>
+    <h3>Pending Payments</h3>
+    <p><%= paymentSummary?.pending_count || 0 %></p>
   </article>
 </section>
 
@@ -58,7 +58,39 @@
   </article>
 
   <article class="card">
-    <h2>Recent Logs</h2>
+    <div class="section-head">
+      <h2>Recent Payment Requests</h2>
+      <a href="/dashboard/payments" class="btn btn-ghost">Open Wallet</a>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Amount</th>
+          <th>Ref</th>
+          <th>Status</th>
+          <th>Tokens</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!recentPaymentRequests.length) { %>
+          <tr><td colspan="4">No payment requests yet.</td></tr>
+        <% } %>
+        <% recentPaymentRequests.forEach((item) => { %>
+          <tr>
+            <td>PKR <%= Number(item.amount_pkr).toFixed(0) %></td>
+            <td><%= item.transaction_ref %></td>
+            <td><span class="pill"><%= item.status %></span></td>
+            <td><%= item.tokens_to_credit || '-' %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </article>
+</section>
+
+<section>
+  <article class="card">
+    <h2>Recent Automation Logs</h2>
     <ul class="log-list">
       <% if (!recentLogs.length) { %>
         <li>No logs yet.</li>

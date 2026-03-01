@@ -9,7 +9,7 @@ router.get('/', (req, res) => {
     .all();
 
   res.render('home', {
-    title: 'Cross Posting Automation',
+    title: 'SMM Cross Automation',
     plans,
   });
 });

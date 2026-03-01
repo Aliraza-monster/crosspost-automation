@@ -4,15 +4,12 @@
   <h1>Create Automation Job</h1>
   <p>
     Add Facebook token, fetch your pages, choose one page, and set source profile URL.
-    The first post starts from the oldest source video.
+    The first post starts from the oldest source video. Each successful post consumes 1 token.
   </p>
 </section>
-
-<% if (!subscription) { %>
-  <div class="alert alert-error">
-    No active subscription found. Ask admin to assign one before creating a job.
-  </div>
-<% } %>
+<div class="alert alert-success">
+  Current token balance: <strong><%= tokenBalance %></strong>. If this is 0, jobs will auto-pause.
+</div>
 
 <section class="card form-card wide">
   <form method="post" action="/dashboard/jobs">
@@ -23,6 +20,7 @@
     <select name="sourcePlatform" required>
       <option value="instagram">Instagram</option>
       <option value="tiktok">TikTok</option>
+      <option value="youtube">YouTube</option>
     </select>
 
     <label>Source Public Profile URL</label>
@@ -43,7 +41,7 @@
     <input type="hidden" name="facebookPageName" id="facebookPageName" />
     <input type="hidden" name="facebookPageToken" id="facebookPageToken" />
 
-    <button class="btn btn-primary" type="submit" <%= subscription ? '' : 'disabled' %>>Save Job</button>
+    <button class="btn btn-primary" type="submit">Save Job</button>
   </form>
 </section>
 

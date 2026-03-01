@@ -13,6 +13,8 @@ const { consumeFlash } = require('./utils/flash');
 const { startScheduler } = require('./services/automation');
 
 const app = express();
+app.locals.appName = env.appName;
+app.locals.easypaisaNumber = env.easypaisaNumber;
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views'));
@@ -35,6 +37,11 @@ app.use(
 
 app.use(attachCurrentUser);
 app.use(consumeFlash);
+app.use((req, res, next) => {
+  res.locals.appName = env.appName;
+  res.locals.easypaisaNumber = env.easypaisaNumber;
+  next();
+});
 app.use(express.static(path.join(__dirname, '../public')));
 
 app.use('/', publicRoutes);

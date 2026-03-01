@@ -1,26 +1,30 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= title %> | CrossPost Pro</title>
+    <title><%= title %> | <%= appName %></title>
     <link rel="stylesheet" href="/css/styles.css" />
   </head>
   <body>
     <header class="topbar">
       <div class="container topbar-inner">
-        <a href="/" class="brand">CrossPost Pro</a>
+        <a href="/" class="brand"><%= appName %></a>
         <nav class="nav">
           <a href="/">Home</a>
           <% if (currentUser) { %>
             <% if (isAdmin) { %>
               <a href="/admin">Admin</a>
+              <a href="/admin/payments">Payments</a>
               <a href="/admin/plans">Plans</a>
               <a href="/admin/subscriptions">Subscriptions</a>
             <% } else { %>
               <a href="/dashboard">Dashboard</a>
               <a href="/dashboard/jobs">Jobs</a>
-              <a href="/dashboard/subscription">My Plan</a>
+              <a href="/dashboard/payments">Payments & Tokens</a>
+            <% } %>
+            <% if (!isAdmin) { %>
+              <span class="token-badge">Tokens: <%= currentUser.token_balance || 0 %></span>
             <% } %>
             <form class="inline-form" action="/logout" method="post">
               <button type="submit" class="btn btn-ghost">Logout</button>

@@ -6,6 +6,8 @@ dotenv.config();
 const env = {
   port: Number.parseInt(process.env.PORT || '3000', 10),
   appUrl: process.env.APP_URL || 'http://localhost:3000',
+  appName: process.env.APP_NAME || 'SMM Cross Automation',
+  easypaisaNumber: process.env.EASYPAISA_NUMBER || '+923053120875',
   sessionSecret: process.env.SESSION_SECRET || 'change-me-in-production',
   databasePath: process.env.DATABASE_PATH || path.join(__dirname, '../../storage/app.db'),
   tempDir: process.env.TEMP_DIR || path.join(__dirname, '../../storage/tmp'),

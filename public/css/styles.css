@@ -60,6 +60,22 @@ a {
   flex-wrap: wrap;
 }
 
+.token-badge {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  border-radius: 999px;
+  padding: 0.28rem 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.token-badge-dark {
+  background: #0f1720;
+  border-color: #334155;
+  color: #d2f9ec;
+}
+
 .nav a {
   text-decoration: none;
   opacity: 0.95;
@@ -85,6 +101,10 @@ a {
 }
 
 .hero p {
+  color: var(--muted);
+}
+
+.section-intro {
   color: var(--muted);
 }
 
@@ -251,6 +271,12 @@ button {
   flex-wrap: wrap;
 }
 
+.section-head-inline {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -363,6 +389,44 @@ small {
   align-items: center;
 }
 
+.tokens-grid {
+  grid-template-columns: 1fr 1.7fr auto;
+}
+
+.payment-item {
+  border: 1px solid #dbe6ef;
+  border-radius: 12px;
+  padding: 0.8rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.payment-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.copy-block {
+  font-size: 1.15rem;
+  letter-spacing: 0.2px;
+}
+
+.compact {
+  gap: 0.35rem;
+}
+
+.positive {
+  color: #0f6d3a;
+  font-weight: 700;
+}
+
+.negative {
+  color: #b42318;
+  font-weight: 700;
+}
+
 .footer {
   border-top: 1px solid var(--line);
   color: #526172;
@@ -377,7 +441,8 @@ small {
 @media (max-width: 960px) {
   .hero,
   .two-col,
-  .plan-grid {
+  .plan-grid,
+  .tokens-grid {
     grid-template-columns: 1fr;
   }
 

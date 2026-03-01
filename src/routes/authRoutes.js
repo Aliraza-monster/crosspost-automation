@@ -81,7 +81,7 @@ router.post('/register', (req, res) => {
     .run(name, email, passwordHash);
 
   req.session.userId = result.lastInsertRowid;
-  setFlash(req, 'success', 'Account created. Ask admin to assign a subscription plan.');
+  setFlash(req, 'success', 'Account created. Add your first payment request to receive tokens.');
   return res.redirect('/dashboard');
 });
 

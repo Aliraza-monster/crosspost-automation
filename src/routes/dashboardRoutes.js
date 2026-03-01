@@ -1,10 +1,12 @@
-﻿const express = require('express');
+const express = require('express');
 const db = require('../config/db');
+const env = require('../config/env');
 const { requireAuth } = require('../middleware/auth');
 const { setFlash } = require('../utils/flash');
 const { fetchManagedPages } = require('../services/facebook');
 const { getActiveSubscription } = require('../services/subscriptions');
 const { runJobNow } = require('../services/automation');
+const { getTokenBalance, listTokenLedgerForUser } = require('../services/tokens');
 const { isoNow } = require('../utils/dates');
 
 const router = express.Router();
@@ -56,14 +58,43 @@ router.get('/', (req, res) => {
     )
     .all(req.user.id);
 
+  const recentPaymentRequests = db
+    .prepare(
+      `
+      SELECT id, amount_pkr, transaction_ref, status, tokens_to_credit, created_at, reviewed_at
+      FROM payment_requests
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+      LIMIT 5
+    `,
+    )
+    .all(req.user.id);
+
+  const paymentSummary = db
+    .prepare(
+      `
+      SELECT
+        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) AS pending_count,
+        SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) AS approved_count,
+        SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) AS rejected_count
+      FROM payment_requests
+      WHERE user_id = ?
+    `,
+    )
+    .get(req.user.id);
+
   const subscription = getActiveSubscription(req.user.id);
+  const tokenBalance = getTokenBalance(req.user.id);
 
   res.render('dashboard/index', {
-    title: 'Dashboard',
+    title: 'Customer Dashboard',
     stats,
     upcomingJobs,
     recentLogs,
+    recentPaymentRequests,
+    paymentSummary,
     subscription,
+    tokenBalance,
   });
 });
 
@@ -81,19 +112,23 @@ router.get('/jobs', (req, res) => {
     .all(req.user.id);
 
   const subscription = getActiveSubscription(req.user.id);
+  const tokenBalance = getTokenBalance(req.user.id);
 
   res.render('dashboard/jobs', {
     title: 'Automation Jobs',
     jobs,
     subscription,
+    tokenBalance,
   });
 });
 
 router.get('/jobs/new', (req, res) => {
   const subscription = getActiveSubscription(req.user.id);
+  const tokenBalance = getTokenBalance(req.user.id);
   res.render('dashboard/new-job', {
     title: 'Create Automation Job',
     subscription,
+    tokenBalance,
   });
 });
 
@@ -119,22 +154,6 @@ router.post('/facebook-pages/fetch', async (req, res) => {
 });
 
 router.post('/jobs', (req, res) => {
-  const subscription = getActiveSubscription(req.user.id);
-  if (!subscription) {
-    setFlash(req, 'error', 'You need an active subscription before creating automation jobs.');
-    return res.redirect('/dashboard/subscription');
-  }
-
-  const currentJobs = getJobCount(req.user.id);
-  if (currentJobs >= subscription.max_jobs) {
-    setFlash(
-      req,
-      'error',
-      `Your plan allows ${subscription.max_jobs} active jobs. Upgrade or ask admin for a higher plan.`,
-    );
-    return res.redirect('/dashboard/jobs');
-  }
-
   const name = String(req.body.name || '').trim();
   const sourcePlatform = String(req.body.sourcePlatform || '').trim().toLowerCase();
   const sourceUrl = String(req.body.sourceUrl || '').trim();
@@ -148,42 +167,56 @@ router.post('/jobs', (req, res) => {
     return res.redirect('/dashboard/jobs/new');
   }
 
-  if (!['instagram', 'tiktok'].includes(sourcePlatform)) {
-    setFlash(req, 'error', 'Source platform must be Instagram or TikTok.');
+  if (!['instagram', 'tiktok', 'youtube'].includes(sourcePlatform)) {
+    setFlash(req, 'error', 'Source platform must be Instagram, TikTok, or YouTube.');
     return res.redirect('/dashboard/jobs/new');
   }
 
-  const result = db.prepare(`
-    INSERT INTO automation_jobs (
-      user_id, name, source_platform, source_url,
-      facebook_user_token, facebook_page_id, facebook_page_name, facebook_page_token,
-      next_media_index, next_run_at, status, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, 'active', ?)
-  `).run(
-    req.user.id,
-    name,
-    sourcePlatform,
-    sourceUrl,
-    facebookUserToken,
-    facebookPageId,
-    facebookPageName || facebookPageId,
-    facebookPageToken,
-    isoNow(),
-    isoNow(),
-  );
+  const userJobCount = getJobCount(req.user.id);
+  if (userJobCount >= 100) {
+    setFlash(req, 'error', 'Maximum 100 jobs per account reached.');
+    return res.redirect('/dashboard/jobs');
+  }
+
+  const result = db
+    .prepare(
+      `
+      INSERT INTO automation_jobs (
+        user_id, name, source_platform, source_url,
+        facebook_user_token, facebook_page_id, facebook_page_name, facebook_page_token,
+        next_media_index, next_run_at, status, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, 'active', ?)
+    `,
+    )
+    .run(
+      req.user.id,
+      name,
+      sourcePlatform,
+      sourceUrl,
+      facebookUserToken,
+      facebookPageId,
+      facebookPageName || facebookPageId,
+      facebookPageToken,
+      isoNow(),
+      isoNow(),
+    );
 
   setImmediate(() => {
     runJobNow(Number(result.lastInsertRowid)).catch(() => {});
   });
 
-  setFlash(req, 'success', 'Automation job created. First run starts immediately with oldest source video.');
+  setFlash(
+    req,
+    'success',
+    'Automation job created. If token balance is available, first run starts immediately.',
+  );
   return res.redirect('/dashboard/jobs');
 });
 
 router.post('/jobs/:id/toggle', (req, res) => {
   const jobId = Number.parseInt(req.params.id, 10);
   const job = db
-    .prepare('SELECT * FROM automation_jobs WHERE id = ? AND user_id = ? AND status != \'archived\'')
+    .prepare("SELECT * FROM automation_jobs WHERE id = ? AND user_id = ? AND status != 'archived'")
     .get(jobId, req.user.id);
 
   if (!job) {
@@ -192,6 +225,11 @@ router.post('/jobs/:id/toggle', (req, res) => {
   }
 
   const nextStatus = job.status === 'active' ? 'paused' : 'active';
+  if (nextStatus === 'active' && getTokenBalance(req.user.id) <= 0) {
+    setFlash(req, 'error', 'Add tokens before resuming this job.');
+    return res.redirect('/dashboard/payments');
+  }
+
   const nextRunAt = nextStatus === 'active' ? isoNow() : job.next_run_at;
 
   db.prepare('UPDATE automation_jobs SET status = ?, next_run_at = ?, updated_at = ? WHERE id = ?').run(
@@ -222,7 +260,7 @@ router.post('/jobs/:id/delete', (req, res) => {
 router.post('/jobs/:id/run-now', async (req, res) => {
   const jobId = Number.parseInt(req.params.id, 10);
   const job = db
-    .prepare('SELECT * FROM automation_jobs WHERE id = ? AND user_id = ? AND status != \'archived\'')
+    .prepare("SELECT * FROM automation_jobs WHERE id = ? AND user_id = ? AND status != 'archived'")
     .get(jobId, req.user.id);
 
   if (!job) {
@@ -240,14 +278,72 @@ router.post('/jobs/:id/run-now', async (req, res) => {
   return res.redirect('/dashboard/jobs');
 });
 
+router.get('/payments', (req, res) => {
+  const tokenBalance = getTokenBalance(req.user.id);
+  const paymentRequests = db
+    .prepare(
+      `
+      SELECT p.*, r.name AS reviewer_name
+      FROM payment_requests p
+      LEFT JOIN users r ON r.id = p.reviewed_by
+      WHERE p.user_id = ?
+      ORDER BY p.created_at DESC
+      LIMIT 60
+    `,
+    )
+    .all(req.user.id);
+  const tokenLedger = listTokenLedgerForUser(req.user.id, 30);
+
+  res.render('dashboard/payments', {
+    title: 'Payments & Tokens',
+    tokenBalance,
+    paymentRequests,
+    tokenLedger,
+    easypaisaNumber: env.easypaisaNumber,
+  });
+});
+
+router.post('/payments', (req, res) => {
+  const amountPkr = Number.parseFloat(String(req.body.amountPkr || '0'));
+  const transactionRef = String(req.body.transactionRef || '').trim();
+  const notes = String(req.body.notes || '').trim();
+
+  if (Number.isNaN(amountPkr) || amountPkr <= 0) {
+    setFlash(req, 'error', 'Enter a valid payment amount in PKR.');
+    return res.redirect('/dashboard/payments');
+  }
+
+  if (transactionRef.length < 4) {
+    setFlash(req, 'error', 'Provide your Easypaisa transaction reference.');
+    return res.redirect('/dashboard/payments');
+  }
+
+  db.prepare(
+    `
+    INSERT INTO payment_requests (
+      user_id, amount_pkr, transaction_ref, payment_method, receiver_number, notes, status, updated_at
+    ) VALUES (?, ?, ?, 'Easypaisa', ?, ?, 'pending', ?)
+  `,
+  ).run(req.user.id, amountPkr, transactionRef, env.easypaisaNumber, notes || null, isoNow());
+
+  setFlash(
+    req,
+    'success',
+    'Payment request submitted. Admin will verify and credit your tokens after confirmation.',
+  );
+  return res.redirect('/dashboard/payments');
+});
+
 router.get('/subscription', (req, res) => {
   const subscription = getActiveSubscription(req.user.id);
   const plans = db.prepare('SELECT * FROM plans WHERE active = 1 ORDER BY price_usd ASC').all();
+  const tokenBalance = getTokenBalance(req.user.id);
 
   res.render('dashboard/subscription', {
-    title: 'Subscription',
+    title: 'Packages',
     subscription,
     plans,
+    tokenBalance,
   });
 });
 

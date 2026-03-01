@@ -1,12 +1,12 @@
-﻿<%- include('partials/header') %>
+<%- include('partials/header') %>
 
 <section class="hero">
   <div>
-    <p class="badge">Facebook Automation Service</p>
-    <h1>Cross-post from Instagram or TikTok to your Facebook Pages automatically.</h1>
+    <p class="badge">Agency Automation Platform</p>
+    <h1>Automate Facebook content distribution with <%= appName %>.</h1>
     <p>
-      Start from the oldest video, publish one video every 24 hours, keep title/description,
-      and clean temporary files after each upload.
+      Connect source profiles from Instagram, TikTok, or YouTube and publish to Facebook Pages
+      automatically. Every successful upload consumes 1 token.
     </p>
     <div class="hero-actions">
       <a href="/register" class="btn btn-primary">Create Customer Account</a>
@@ -14,29 +14,50 @@
     </div>
   </div>
   <div class="hero-card">
-    <h3>How it works</h3>
+    <h3>How billing works</h3>
     <ol>
-      <li>Connect Facebook token and choose target page.</li>
-      <li>Add public Instagram/TikTok source URL.</li>
-      <li>System posts oldest video first, then next oldest every day.</li>
-      <li>Downloaded file is removed right after upload.</li>
+      <li>Send payment via Easypaisa: <strong><%= easypaisaNumber %></strong></li>
+      <li>Submit transaction reference from your dashboard.</li>
+      <li>Admin verifies payment and credits tokens.</li>
+      <li>Automation jobs consume tokens when a reel/video is posted.</li>
     </ol>
   </div>
 </section>
 
 <section>
-  <h2>Pricing Plans</h2>
+  <h2>Why agencies use this</h2>
+  <div class="grid plans-grid">
+    <article class="card">
+      <h3>Oldest-to-newest posting</h3>
+      <p>Each job publishes in sequence so content order stays clean and predictable.</p>
+    </article>
+    <article class="card">
+      <h3>Facebook page picker</h3>
+      <p>Fetch manageable pages from your Facebook user token and select targets quickly.</p>
+    </article>
+    <article class="card">
+      <h3>Admin token control</h3>
+      <p>Approve/reject payments and manually adjust wallet balances from admin dashboard.</p>
+    </article>
+  </div>
+</section>
+
+<section>
+  <h2>Packages</h2>
+  <p class="section-intro">
+    Plans are optional for operational limits. Token wallet is the main posting credit system.
+  </p>
   <div class="grid plans-grid">
     <% if (!plans || plans.length === 0) { %>
-      <p>No active plans yet. Admin can create plans in dashboard.</p>
+      <p>No active plans yet. Create plans from admin dashboard.</p>
     <% } %>
 
     <% (plans || []).forEach((plan) => { %>
       <article class="card plan-card">
         <h3><%= plan.name %></h3>
         <p class="price">$<%= Number(plan.price_usd).toFixed(0) %>/<%= plan.billing_cycle %></p>
-        <p><%= plan.description || 'Custom automation package.' %></p>
-        <p><strong><%= plan.max_jobs %></strong> active automation jobs</p>
+        <p><%= plan.description || 'Custom package for agencies and teams.' %></p>
+        <p><strong><%= plan.max_jobs %></strong> recommended active jobs</p>
       </article>
     <% }) %>
   </div>

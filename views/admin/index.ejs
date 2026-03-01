@@ -1,14 +1,14 @@
-﻿<%- include('../partials/header') %>
+<%- include('../partials/header') %>
 
 <section>
   <h1>Admin Dashboard</h1>
-  <p>Control plans, subscriptions, and customer automation jobs.</p>
+  <p>Control users, token approvals, plans, and automation health.</p>
 </section>
 
 <section class="grid stats-grid">
   <article class="card stat-card"><h3>Customers</h3><p><%= stats.users %></p></article>
-  <article class="card stat-card"><h3>Plans</h3><p><%= stats.plans %></p></article>
-  <article class="card stat-card"><h3>Active Subs</h3><p><%= stats.activeSubscriptions %></p></article>
+  <article class="card stat-card"><h3>Pending Payments</h3><p><%= stats.pendingPayments %></p></article>
+  <article class="card stat-card"><h3>Total Tokens</h3><p><%= stats.totalTokens %></p></article>
   <article class="card stat-card"><h3>Active Jobs</h3><p><%= stats.activeJobs %></p></article>
 </section>
 
@@ -17,19 +17,52 @@
     <h2>Recent Customers</h2>
     <table>
       <thead>
-        <tr><th>Name</th><th>Email</th><th>Created</th></tr>
+        <tr><th>Name</th><th>Email</th><th>Tokens</th><th>Created</th></tr>
       </thead>
       <tbody>
         <% if (!recentUsers.length) { %>
-          <tr><td colspan="3">No customers yet.</td></tr>
+          <tr><td colspan="4">No customers yet.</td></tr>
         <% } %>
         <% recentUsers.forEach((u) => { %>
-          <tr><td><%= u.name %></td><td><%= u.email %></td><td><%= u.created_at %></td></tr>
+          <tr>
+            <td><%= u.name %></td>
+            <td><%= u.email %></td>
+            <td><%= u.token_balance %></td>
+            <td><%= u.created_at %></td>
+          </tr>
         <% }) %>
       </tbody>
     </table>
   </article>
 
+  <article class="card">
+    <div class="section-head">
+      <h2>Recent Payments</h2>
+      <a href="/admin/payments" class="btn btn-ghost">Open Payment Panel</a>
+    </div>
+    <table>
+      <thead>
+        <tr><th>User</th><th>Amount</th><th>Ref</th><th>Status</th><th>Tokens</th></tr>
+      </thead>
+      <tbody>
+        <% if (!recentPayments.length) { %>
+          <tr><td colspan="5">No payment requests yet.</td></tr>
+        <% } %>
+        <% recentPayments.forEach((item) => { %>
+          <tr>
+            <td><%= item.user_name %><br /><small><%= item.user_email %></small></td>
+            <td>PKR <%= Number(item.amount_pkr).toFixed(0) %></td>
+            <td><%= item.transaction_ref %></td>
+            <td><span class="pill"><%= item.status %></span></td>
+            <td><%= item.tokens_to_credit || '-' %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </article>
+</section>
+
+<section>
   <article class="card">
     <h2>Recent Jobs</h2>
     <table>

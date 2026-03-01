@@ -1,28 +1,30 @@
-{
-  "name": "crosspost-automation",
-  "version": "1.0.0",
-  "description": "Cross-posting automation service with admin dashboard",
-  "main": "src/server.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "dependencies": {
-    "axios": "^1.13.6",
-    "bcryptjs": "^3.0.3",
-    "better-sqlite3": "^12.6.2",
-    "dayjs": "^1.11.19",
-    "dotenv": "^17.3.1",
-    "ejs": "^4.0.1",
-    "express": "^5.2.1",
-    "express-session": "^1.19.0",
-    "form-data": "^4.0.5",
-    "node-cron": "^4.2.1",
-    "youtube-dl-exec": "^3.1.3"
-  }
+﻿{
+    "name":  "smm-cross-automation",
+    "version":  "1.0.0",
+    "description":  "SMM Cross Automation platform with token wallet and admin approvals",
+    "main":  "src/server.js",
+    "scripts":  {
+                    "test":  "echo \"Error: no test specified\" \u0026\u0026 exit 1",
+                    "start":  "node src/server.js",
+                    "dev":  "node --watch src/server.js"
+                },
+    "keywords":  [
+
+                 ],
+    "author":  "",
+    "license":  "ISC",
+    "type":  "commonjs",
+    "dependencies":  {
+                         "axios":  "^1.13.6",
+                         "bcryptjs":  "^3.0.3",
+                         "better-sqlite3":  "^12.6.2",
+                         "dayjs":  "^1.11.19",
+                         "dotenv":  "^17.3.1",
+                         "ejs":  "^4.0.1",
+                         "express":  "^5.2.1",
+                         "express-session":  "^1.19.0",
+                         "form-data":  "^4.0.5",
+                         "node-cron":  "^4.2.1",
+                         "youtube-dl-exec":  "^3.1.3"
+                     }
 }

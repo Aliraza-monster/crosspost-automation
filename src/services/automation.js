@@ -4,7 +4,7 @@ const env = require('../config/env');
 const { addHours, isoNow } = require('../utils/dates');
 const { listSourceVideos, downloadVideo, cleanupFile } = require('./sourceVideos');
 const { uploadVideoToPage } = require('./facebook');
-const { getActiveSubscription } = require('./subscriptions');
+const { getTokenBalance, adjustUserTokens } = require('./tokens');
 
 const inFlightJobs = new Set();
 let schedulerStarted = false;
@@ -36,14 +36,14 @@ async function processSingleJob(job) {
   let downloadedPath = null;
 
   try {
-    const subscription = getActiveSubscription(job.user_id);
-    if (!subscription) {
+    const tokenBalance = getTokenBalance(job.user_id);
+    if (tokenBalance <= 0) {
       db.prepare('UPDATE automation_jobs SET status = ?, updated_at = ? WHERE id = ?').run(
         'paused',
         isoNow(),
         job.id,
       );
-      logJob(job.id, 'error', 'Job paused because user has no active subscription.');
+      logJob(job.id, 'error', 'Job paused because account token balance is 0.');
       return;
     }
 
@@ -72,6 +72,16 @@ async function processSingleJob(job) {
       description: selected.description,
     });
 
+    const newTokenBalance = adjustUserTokens({
+      userId: job.user_id,
+      deltaTokens: -1,
+      reason: `Token used for job "${job.name}"`,
+      meta: {
+        jobId: job.id,
+        sourceVideo: selected.url,
+      },
+    });
+
     db.prepare(`
       UPDATE automation_jobs
       SET next_media_index = ?,
@@ -94,10 +104,21 @@ async function processSingleJob(job) {
       sourceVideo: selected.url,
       facebookVideoId: upload.id || null,
       title: selected.title,
+      tokensRemaining: newTokenBalance,
     });
   } catch (error) {
     const message = error.response?.data?.error?.message || error.message;
     logJob(job.id, 'error', 'Automation run failed.', { error: message });
+    if (/insufficient token balance/i.test(message)) {
+      db.prepare('UPDATE automation_jobs SET status = ?, updated_at = ? WHERE id = ?').run(
+        'paused',
+        isoNow(),
+        job.id,
+      );
+      logJob(job.id, 'error', 'Job paused because tokens were exhausted during run.');
+      return;
+    }
+
     updateJobSchedule(job.id, addHours(null, 1));
   } finally {
     cleanupFile(downloadedPath);

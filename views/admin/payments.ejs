@@ -1,0 +1,106 @@
+<%- include('../partials/header') %>
+
+<section>
+  <h1>Payments & Tokens</h1>
+  <p>Review Easypaisa transfers, approve token credits, or perform manual wallet adjustments.</p>
+</section>
+
+<section class="alert alert-success">
+  Easypaisa receiver configured: <strong><%= easypaisaNumber %></strong>
+</section>
+
+<section class="grid two-col">
+  <article class="card">
+    <h2>Pending Payment Requests</h2>
+    <% if (!pendingPayments.length) { %>
+      <p>No pending payment requests.</p>
+    <% } %>
+    <div class="stack">
+      <% pendingPayments.forEach((item) => { %>
+        <div class="payment-item">
+          <div class="payment-head">
+            <strong><%= item.user_name %></strong>
+            <span><%= item.user_email %></span>
+          </div>
+          <p>
+            Amount: <strong>PKR <%= Number(item.amount_pkr).toFixed(0) %></strong>
+            | Ref: <strong><%= item.transaction_ref %></strong>
+          </p>
+          <p>Notes: <%= item.notes || '-' %></p>
+          <div class="grid two-col">
+            <form method="post" action="/admin/payments/<%= item.id %>/approve" class="form-card compact">
+              <label>Tokens to Credit</label>
+              <input type="number" name="tokensToCredit" min="1" required />
+              <label>Admin Note (optional)</label>
+              <input type="text" name="adminNote" />
+              <button class="btn btn-primary" type="submit">Approve & Credit</button>
+            </form>
+            <form method="post" action="/admin/payments/<%= item.id %>/reject" class="form-card compact">
+              <label>Reject Note</label>
+              <input type="text" name="adminNote" placeholder="Reason for rejection" />
+              <button class="btn btn-danger" type="submit">Reject Request</button>
+            </form>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </article>
+
+  <article class="card">
+    <h2>Manual Token Adjustment</h2>
+    <p>Use positive numbers to credit and negative numbers to debit.</p>
+    <div class="stack">
+      <% users.forEach((u) => { %>
+        <form method="post" action="/admin/users/<%= u.id %>/tokens/adjust" class="plan-edit">
+          <div class="payment-head">
+            <strong><%= u.name %></strong>
+            <span><%= u.email %></span>
+          </div>
+          <p>Current Balance: <strong><%= u.token_balance %></strong></p>
+          <div class="grid plan-grid tokens-grid">
+            <input type="number" name="deltaTokens" placeholder="+100 or -10" required />
+            <input type="text" name="reason" placeholder="Reason for adjustment" />
+            <button class="btn btn-secondary" type="submit">Apply</button>
+          </div>
+        </form>
+      <% }) %>
+    </div>
+  </article>
+</section>
+
+<section>
+  <article class="card">
+    <h2>Payment Decision History</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Amount</th>
+          <th>Reference</th>
+          <th>Status</th>
+          <th>Tokens</th>
+          <th>Reviewer</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!paymentHistory.length) { %>
+          <tr><td colspan="7">No reviewed requests yet.</td></tr>
+        <% } %>
+        <% paymentHistory.forEach((item) => { %>
+          <tr>
+            <td><%= item.user_name %><br /><small><%= item.user_email %></small></td>
+            <td>PKR <%= Number(item.amount_pkr).toFixed(0) %></td>
+            <td><%= item.transaction_ref %></td>
+            <td><span class="pill"><%= item.status %></span></td>
+            <td><%= item.tokens_to_credit || '-' %></td>
+            <td><%= item.reviewer_name || '-' %></td>
+            <td><%= item.admin_note || '-' %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </article>
+</section>
+
+<%- include('../partials/footer') %>

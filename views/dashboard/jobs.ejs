@@ -3,13 +3,19 @@
 <section class="section-head">
   <div>
     <h1>Automation Jobs</h1>
-    <p>Each job posts oldest-to-newest every 24 hours.</p>
+    <p>Each successful post uses 1 token and publishes oldest-to-newest every 24 hours.</p>
   </div>
-  <a href="/dashboard/jobs/new" class="btn btn-primary">New Job</a>
+  <div class="section-head-inline">
+    <span class="token-badge token-badge-dark">Token Balance: <%= tokenBalance %></span>
+    <a href="/dashboard/jobs/new" class="btn btn-primary">New Job</a>
+  </div>
 </section>
 
-<% if (!subscription) { %>
-  <div class="alert alert-error">No active subscription. Ask admin to assign one before creating jobs.</div>
+<% if (tokenBalance <= 0) { %>
+  <div class="alert alert-error">
+    Token balance is 0. Jobs may pause automatically until you add tokens.
+    <a href="/dashboard/payments">Go to Payments & Tokens</a>.
+  </div>
 <% } %>
 
 <section class="card">
